@@ -20,7 +20,10 @@ public class MessageHandler {
 		if (m.find()) {
 			for (Command c : Command.values()) {
 				if (c.name().toLowerCase().equals(m.group(1)))
-					if (!(event.getAuthor().getLongID() == 159018622600216577L || event.getAuthor().getPermissionsForGuild(event.getGuild()).contains(Permissions.MANAGE_ROLES)))
+					if (!(
+							(main.client.getOurUser().getLongID() == 431980306111660062L && event.getAuthor().getLongID() == 159018622600216577L)
+									|| event.getAuthor().getPermissionsForGuild(event.getGuild()).contains(Permissions.MANAGE_ROLES)
+					))
 						RequestBuffer.request(() -> event.getChannel().sendMessage("You do not have permission for that."));
 					else
 						c.action.accept(event, m.group((2)));
