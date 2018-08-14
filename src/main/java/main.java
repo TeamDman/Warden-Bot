@@ -21,6 +21,7 @@ public class main {
 		client.getDispatcher().registerListener(MessageHandler.class);
 		client.getDispatcher().registerListener(main.class);
 		client.getDispatcher().registerListener(joiner);
+		useRole = Boolean.valueOf(config.get(Config.Property.MUTE_USE_ROLE));
 	}
 
 	@EventSubscriber
