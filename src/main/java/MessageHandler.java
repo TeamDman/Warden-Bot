@@ -7,6 +7,7 @@ import sx.blah.discord.util.RequestBuffer;
 
 import java.awt.*;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -108,8 +109,11 @@ public class MessageHandler {
 		}),
 		GETAGE((event, args) -> {
 			IUser user = getSingleUser(event.getChannel(), args);
-			if (user != null)
-				RequestBuffer.request(() -> event.getChannel().sendMessage(user.getCreationDate().toString()));
+			if (user != null){
+				Instant age = user.getCreationDate();
+				long ageMinutes = Instant.now().minus(age.toEpochMilli(), ChronoUnit.MILLIS).getEpochSecond()/60;
+				RequestBuffer.request(() -> event.getChannel().sendMessage(age.toString() + "\t("+ageMinutes+" minutes)."));
+			}
 		}),
 		SIMJOIN((event, args) -> {
 			IUser user = getSingleUser(event.getChannel(), args);
