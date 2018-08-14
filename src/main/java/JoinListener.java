@@ -34,8 +34,6 @@ public class JoinListener implements IListener<UserJoinEvent> {
 				RequestBuffer.request(() -> message.addReaction(Reaction.PARDON.emoji));
 				new ReactionListener(new ReactionListener.Builder(message).setAuthor(null).setOnAdd(e -> handle(e, event.getGuild(), event.getUser())));
 			});
-		} else {
-			RequestBuffer.request(() -> main.reportChannel.sendMessage(event.getUser() + " joined without suspicion. (age " + ageMinutes +" minutes)"));
 		}
 	}
 
@@ -49,7 +47,7 @@ public class JoinListener implements IListener<UserJoinEvent> {
 				.appendField("User", user.mention(), true)
 				.appendField("ID", user.getStringID(), true)
 				.appendField("Join Instant", age.toString(), true)
-				.appendField("Account Age", (Instant.now().minus(age.toEpochMilli(), ChronoUnit.MILLIS).getEpochSecond() / (60 * 60 * 24)) + " days", true)
+				.appendField("Account Age", (Instant.now().minus(age.toEpochMilli(), ChronoUnit.MILLIS).getEpochSecond() / (60)) + " minutes", true)
 				.build());
 	}
 

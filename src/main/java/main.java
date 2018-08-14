@@ -1,8 +1,12 @@
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.GuildCreateEvent;
+import sx.blah.discord.handle.impl.events.shard.LoginEvent;
+import sx.blah.discord.handle.obj.ActivityType;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.handle.obj.StatusType;
+import sx.blah.discord.util.RequestBuffer;
 
 public class main {
 	static final IDiscordClient client;
@@ -32,5 +36,9 @@ public class main {
 		for (IRole role : event.getGuild().getRoles())
 			if (role.getLongID() == Long.valueOf(config.get(Config.Property.MUTE_ROLE_ID)))
 				muteRole = role;
+	}
+	@EventSubscriber
+	public static void handleStart(LoginEvent event) {
+		RequestBuffer.request(() -> client.changePresence(StatusType.ONLINE, ActivityType.WATCHING, config.get(Config.Property.PRESENCE_TEXT)));
 	}
 }

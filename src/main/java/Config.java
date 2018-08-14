@@ -54,12 +54,13 @@ public class Config {
 
 	public enum Property {
 		DISCORD_TOKEN("undefined"),
-		PREFIX("^/warden\\s+(\\w+)\\s?(.*)"),
+		PREFIX("/warden"),
 		REPORT_CHANNEL("000000000000000000"),
 		AGE_BAN("30"),
 		AGE_MUTE("300"),
 		MUTE_ROLE_ID("000000000000000000"),
-		MUTE_USE_ROLE("false");
+		MUTE_USE_ROLE("false"),
+		PRESENCE_TEXT("new users");
 		final Object fallback;
 
 		Property(Object fallback) {

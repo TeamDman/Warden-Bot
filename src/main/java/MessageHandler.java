@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageHandler {
-	static final Pattern cmdPattern = Pattern.compile(main.config.get(Config.Property.PREFIX));
+	static final Pattern cmdPattern = Pattern.compile("^"+main.config.get(Config.Property.PREFIX)+"\\s+(\\w+)\\s?(.*)");
 
 	@EventSubscriber
 	public static void handle(MessageReceivedEvent event) {
@@ -41,9 +41,9 @@ public class MessageHandler {
 	}
 
 	private static IChannel getSingleChannel(IGuild guild, IChannel channel, String arg) {
-		Pattern p    = Pattern.compile("(\\d+)");
-		Matcher m    = p.matcher(arg);
-		IChannel   ch = null;
+		Pattern  p  = Pattern.compile("(\\d+)");
+		Matcher  m  = p.matcher(arg);
+		IChannel ch = null;
 		if (!m.find() || (ch = channel.getGuild().getChannelByID(Long.valueOf(m.group(1)))) == null)
 			RequestBuffer.request(() -> channel.sendMessage("No channels matched the provided selector."));
 		return ch;
@@ -76,7 +76,7 @@ public class MessageHandler {
 			RequestBuffer.request(() -> event.getChannel().sendMessage("Set the ban threshold to " + args + " minutes."));
 		}),
 		SETCHANNEL((event, args) -> {
-			IChannel ch = getSingleChannel(event.getGuild(),event.getChannel(),args);
+			IChannel ch = getSingleChannel(event.getGuild(), event.getChannel(), args);
 			if (ch == null) {
 				RequestBuffer.request(() -> event.getChannel().sendMessage("No channel found with that ID"));
 			} else {
@@ -101,13 +101,15 @@ public class MessageHandler {
 			RequestBuffer.request(() -> event.getChannel().sendMessage("No role with given ID found."));
 		}),
 		SETUSEMUTEROLE((event, args) -> {
-			boolean userole =Boolean.valueOf(args);
+			boolean userole = Boolean.valueOf(args);
 			main.useRole = userole;
 			main.config.set(Config.Property.MUTE_USE_ROLE, Boolean.toString(userole));
 			RequestBuffer.request(() -> event.getChannel().sendMessage("Now" + (main.useRole ? "" : " not") + " using the specified role."));
 		}),
 		GETAGE((event, args) -> {
-			RequestBuffer.request(() -> event.getChannel().sendMessage(event.getAuthor().getCreationDate().toString()));
+			IUser user = getSingleUser(event.getChannel(), args);
+			if (user != null)
+				RequestBuffer.request(() -> event.getChannel().sendMessage(user.getCreationDate().toString()));
 		}),
 		SIMJOIN((event, args) -> {
 			IUser user = getSingleUser(event.getChannel(), args);

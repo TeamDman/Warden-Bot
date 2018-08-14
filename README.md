@@ -28,7 +28,7 @@ Sets the role to be used for muting users.
 #### /warden setusemuterole <true|false>
 Sets whether to use a role to mute people, or channel permission overrides.
 
-#### /warden getage
+#### /warden getage @user
 Displays the message author's age.
 
 #### /warden simjoin @user
