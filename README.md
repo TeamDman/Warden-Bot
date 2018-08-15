@@ -1,15 +1,27 @@
 # Warden Bot
+
 ## Setup
+
 ### Installation
+
 From the command line:
+
 Clone the repo
+
 `git clone https://github.com/TeamDman/Warden-Bot`
+
 Change cmd working directory
-`cd Warden-Bot`
+
+`cd Warden-Bot
+
 Install dependencies
+
 `npm install`
+
 ### Running
+
 From the command line,
+
 `node app.js`
 
 For testing purposes, `config.json` contains a value `simjoins_only`.
@@ -17,8 +29,11 @@ When enabled, new users are ignored, and only the `/warden simjoin @user` comman
 Make sure this isn't `true` when live.
 
 ## Commands
+
 All commands require the MANAGE_ROLES permission.
+
 #### /warden help
+
 Displays a primitive list of commands. 
 This document is more helpful.
 
