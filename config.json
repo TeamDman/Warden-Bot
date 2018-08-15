@@ -1,5 +1,5 @@
 {
-    "token": "NDMxOTgwMzA2MTExNjYwMDYy.DlJc9g.v3T0fPvKJFYGzAYvDvaQTCuMa74",
+    "token": "",
     "prefix": "/warden",
     "avatar": "https://i.imgur.com/a1eN6z4.png",
     "age_mute": 35000,
@@ -8,5 +8,8 @@
     "report_normal": true,
     "mute_role_id": "478360461817937921",
     "mute_role_enabled": true,
-    "reaction_timeout": 120000
+    "reaction_timeout": 120000,
+    "message_join": "Hey there, it seems your account is a bit new! We're just looking things over.",
+    "message_pardon": "Everything looks good, welcome to the community!",
+    "message_enabled": true
 }

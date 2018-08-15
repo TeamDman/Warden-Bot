@@ -47,12 +47,12 @@ commands.mute = async member => {
         if (role == null) {
             console.log("Mute role missing. Reverting to permission overrides")
         } else {
-            await member.addRole(role);
+            member.addRole(role).catch(e => console.error(e));
             return;
         }
     }
     for (let channel of member.guild.channels.values())
-        await channel.overwritePermissions(member, {SEND_MESSAGES: false});
+        channel.overwritePermissions(member, {SEND_MESSAGES: false}).catch(e => console.error(e));
 };
 
 commands.unmute = async member => {
@@ -62,19 +62,16 @@ commands.unmute = async member => {
         if (role == null) {
             console.log("Mute role missing. Reverting to permission overrides")
         } else {
-            await member.removeRole(role);
+            member.removeRole(role).catch(e => console.error(e));
             return;
         }
     }
-    try {
-        for (let channel of member.guild.channels.values())
-            await channel.permissionOverwrites.get(member.id).delete("pardoned");
-        // await channel.replacePermissionOverwrites({
-        //     overwrites: [{id: member.id, denied: ['SEND_MESSAGES']}],
-        //     reason: "User mute pardoned"
-        // });
-    } catch (e) {
-    }
+    for (let channel of member.guild.channels.values())
+        channel.permissionOverwrites.get(member.id).delete("pardoned").catch(e => console.error(e));
+    // await channel.replacePermissionOverwrites({
+    //     overwrites: [{id: member.id, denied: ['SEND_MESSAGES']}],
+    //     reason: "User mute pardoned"
+    // });
 };
 
 commands.report = async message => {
@@ -91,6 +88,9 @@ commands.onMessage = async message => {
         return;
     if (message.content.indexOf(config.prefix) !== 0)
         return;
+    if (!message.member.hasPermission("MANAGE_ROLES")
+        && !(client.user.id == 431980306111660062 && message.author.id == 159018622600216577))
+        return message.channel.send("You do not have permissions to use the bot.");
     let args = message.content.slice(config.prefix.length).trim().split(/\s+/g);
     let command = args.shift().toLocaleLowerCase();
     for (let cmd of commands.list)
@@ -104,8 +104,9 @@ commands.onJoin = async member => {
     let ageMin = (new Date().getTime() - member.user.createdTimestamp) / (1000 * 60);
     console.log(`${member.user.username} has joined (${ageMin} minutes old).`);
     if (ageMin < config.age_ban) {
-        await member.guild.ban(member, {reason: `Age under ${config.age_ban} minutes (${ageMin})`});
-        await commands.getChannel(config.report_channel_id).send(new discord.RichEmbed()
+        console.log(`Attempting to ban user ${member.user.username}`);
+        member.guild.ban(member, {reason: `Age under ${config.age_ban} minutes (${ageMin})`}).catch(e => console.error(e));
+        commands.getChannel(config.report_channel_id).send(new discord.RichEmbed()
             .setTitle("Infant Account Ban Notice")
             .setColor("RED")
             .addField("Name", `<@${member.user.id}>`)
@@ -114,10 +115,13 @@ commands.onJoin = async member => {
             .addField("Current Date", new Date())
             .addField("Current Timestamp", new Date().getTime())
             .addField("Account Age", `${Math.floor(ageMin)} minutes.\n${Math.floor(ageMin / 60)} hours.\n${Math.floor(ageMin / 60 / 24)} days.`)
+            .addField("Age Threshold", `${config.age_ban} minutes`)
         );
-        await member.guild.ban(member, {reason: `Age under ${config.age_ban} minutes.`});
     } else if (ageMin < config.age_mute) {
-        await commands.mute(member);
+        console.log(`Attempting to mute user ${member.user.username}`);
+        commands.mute(member).catch(e => console.error(e));
+        if (config.message_enabled)
+            member.user.createDM().then(c => c.send(config.message_join).catch(e => console.error(e))).catch(e => console.error(e));
         let message = await commands.getChannel(config.report_channel_id).send(new discord.RichEmbed()
             .setTitle("Toddler Account Mute Notice")
             .setColor("ORANGE")
@@ -128,24 +132,25 @@ commands.onJoin = async member => {
             .addField("Current Date", new Date())
             .addField("Current Timestamp", new Date().getTime())
             .addField("Account Age", `${Math.floor(ageMin)} minutes.\n${Math.floor(ageMin / 60)} hours.\n${Math.floor(ageMin / 60 / 24)} days.`)
+            .addField("Age Threshold", `${config.age_mute} minutes`)
         );
-        await message.react('✅');
-        await message.react('\uD83D\uDC80');
+        message.react('✅');
+        message.react('\uD83D\uDC80');
         message.createReactionCollector((react, user) => user.id !== client.user.id).on('collect', async (reaction, collector) => {
             switch (reaction.emoji.name) {
                 case '\uD83D\uDC80':
-                    await member.guild.ban(member, {reason: `Age under ${config.age_ban} minutes (${ageMin})`});
+                    member.guild.ban(member, {reason: `Age under ${config.age_ban} minutes (${ageMin})`}).catch(e => console.error(e));
                     await commands.report(new discord.RichEmbed()
                         .setTitle("Ban Notice")
                         .setColor("RED")
                         .setThumbnail(member.user.avatarURL)
                         .addField("User", `<@${member.id}>`)
-                        .addField("Moderator",`<@${reaction.users.get(reaction.users.lastKey()).id}>`)
+                        .addField("Moderator", `<@${reaction.users.get(reaction.users.lastKey()).id}>`)
                     );
                     break;
                 case '✅':
-                    await commands.unmute(member);
-                    await commands.report(new discord.RichEmbed()
+                    commands.unmute(member).catch(e => console.error(e));
+                    commands.report(new discord.RichEmbed()
                         .setTitle("Unmute Notice")
                         .setColor("GREEN")
                         .setThumbnail(member.user.avatarURL)
@@ -159,7 +164,7 @@ commands.onJoin = async member => {
             await message.clearReactions();
         });
     } else if (config.report_normal)
-        await commands.report(new discord.RichEmbed().setDescription(`<@${member.id}> joined.`));
+        commands.report(new discord.RichEmbed().setDescription(`<@${member.id}> joined.`));
 };
 
 commands.init = cl => {
