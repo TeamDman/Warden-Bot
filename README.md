@@ -1,6 +1,16 @@
 # Warden Bot
 ## Setup
-
+### Installation
+From the command line:
+Clone the repo
+`git clone https://github.com/TeamDman/Warden-Bot`
+Change cmd working directory
+`cd Warden-Bot`
+Install dependencies
+`npm install`
+### Running
+From the command line,
+`node app.js`
 
 For testing purposes, `config.json` contains a value `simjoins_only`.
 When enabled, new users are ignored, and only the `/warden simjoin @user` command will trigger the join event.
