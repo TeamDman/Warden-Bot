@@ -12,7 +12,7 @@ Clone the repo
 
 Change cmd working directory
 
-`cd Warden-Bot
+`cd Warden-Bot`
 
 Install dependencies
 
