@@ -1,6 +1,11 @@
 # Warden Bot
 ## Setup
 
+
+For testing purposes, `config.json` contains a value `simjoins_only`.
+When enabled, new users are ignored, and only the `/warden simjoin @user` command will trigger the join event.
+Make sure this isn't `true` when live.
+
 ## Commands
 All commands require the MANAGE_ROLES permission.
 #### /warden help
@@ -10,8 +15,8 @@ This document is more helpful.
 #### /warden info
 Displays relevant values from `config.json`
 
-#### /warden inforaw
-Displays all value mappings from `config.json`
+#### /warden eval
+Directly evaluates javascript. Careful.
 
 #### /warden setraw index value
 Attempts to directly set a value to the config.

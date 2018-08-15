@@ -215,10 +215,12 @@ addCommand("inforaw", async (message, args) => {
     message.channel.send(embed);
 });
 
-addCommand("setraw", async (message, args) => {
-    config[args[0]]=args.shift().join(" ");
-    commands.writeConfig();
-    message.channel.send("The config has been updated.");
+addCommand("eval", async (message, args) => {
+    try {
+        message.channel.send(`>${eval(args.join(" "))}`);
+    } catch (error) {
+        message.channel.send(`Error:${error}`);
+    }
 });
 
 addCommand("setagemute", async (message, args) => {
