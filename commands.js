@@ -84,8 +84,6 @@ commands.report = async message => {
 commands.onMessage = async message => {
     if (message.author.bot)
         return;
-    if (message.author.id !== "159018622600216577")
-        return;
     if (message.content.indexOf(config.prefix) !== 0)
         return;
     if (!message.member.hasPermission("MANAGE_ROLES")
