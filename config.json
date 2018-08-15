@@ -1,6 +1,12 @@
 {
     "token": "NDMxOTgwMzA2MTExNjYwMDYy.DlJc9g.v3T0fPvKJFYGzAYvDvaQTCuMa74",
     "prefix": "/warden",
-    "age_mute": 99,
-    "age_ban": 30
+    "avatar": "https://i.imgur.com/a1eN6z4.png",
+    "age_mute": 35000,
+    "age_ban": 30,
+    "report_channel_id": "452530315630477333",
+    "report_normal": true,
+    "mute_role_id": "478360461817937921",
+    "mute_role_enabled": true,
+    "reaction_timeout": 120000
 }

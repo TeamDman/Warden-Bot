@@ -2,11 +2,12 @@
 const config = require('./config');
 const discord = require('discord.js');
 const client = new discord.Client();
+let commands;
 
 client.on('ready', () => {
     console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`);
     client.user.setActivity(`Serving ${client.guilds.size} servers`);
-    require("./commands.js").init(client);
+    commands = require("./commands.js").init(client);
 });
 
 client.on('guildCreate', guild => {
@@ -19,5 +20,8 @@ client.on('guildDelete', guild => {
     client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
+client.on('guildMemberAdd', member => {
+    commands.onJoin(member);
+});
 
 client.login(config.token);
