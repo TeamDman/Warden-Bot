@@ -105,6 +105,8 @@ commands.onJoin = async member => {
     console.log(`${member.user.username} has joined (${ageMin} minutes old).`);
     if (ageMin < config.age_ban) {
         console.log(`Attempting to ban user ${member.user.username}`);
+        if (config.message_join_ban_enabled)
+            member.user.createDM().then(c => c.send(config.message_join_ban).catch(e => console.error(e))).catch(e => console.error(e));
         member.guild.ban(member, {reason: `Age under ${config.age_ban} minutes (${ageMin})`}).catch(e => console.error(e));
         commands.getChannel(config.report_channel_id).send(new discord.RichEmbed()
             .setTitle("Infant Account Ban Notice")
@@ -120,7 +122,7 @@ commands.onJoin = async member => {
     } else if (ageMin < config.age_mute) {
         console.log(`Attempting to mute user ${member.user.username}`);
         commands.mute(member).catch(e => console.error(e));
-        if (config.message_enabled)
+        if (config.message_join_enabled)
             member.user.createDM().then(c => c.send(config.message_join).catch(e => console.error(e))).catch(e => console.error(e));
         let message = await commands.getChannel(config.report_channel_id).send(new discord.RichEmbed()
             .setTitle("Toddler Account Mute Notice")
@@ -140,7 +142,9 @@ commands.onJoin = async member => {
             switch (reaction.emoji.name) {
                 case '\uD83D\uDC80':
                     member.guild.ban(member, {reason: `Age under ${config.age_ban} minutes (${ageMin})`}).catch(e => console.error(e));
-                    await commands.report(new discord.RichEmbed()
+                    if (config.message_pardon_refused_enabled)
+                        member.user.createDM().then(c => c.send(config.message_pardon_refused).catch(e => console.error(e))).catch(e => console.error(e));
+                    commands.report(new discord.RichEmbed()
                         .setTitle("Ban Notice")
                         .setColor("RED")
                         .setThumbnail(member.user.avatarURL)
@@ -150,6 +154,8 @@ commands.onJoin = async member => {
                     break;
                 case '✅':
                     commands.unmute(member).catch(e => console.error(e));
+                    if (config.message_pardon_enabled)
+                        member.user.createDM().then(c => c.send(config.message_pardon).catch(e => console.error(e))).catch(e => console.error(e));
                     commands.report(new discord.RichEmbed()
                         .setTitle("Unmute Notice")
                         .setColor("GREEN")
@@ -197,6 +203,22 @@ addCommand("info", async (message, args) => {
         .addField("Mute Role", `<@&${commands.getRole(config.mute_role_id) ? commands.getRole(config.mute_role_id).id : "undefined"}>`)
         .addField("Mute Role Enabled", config.mute_role_enabled)
     )
+});
+
+addCommand("inforaw", async (message, args) => {
+    let embed = new discord.RichEmbed()
+        .setTitle("config.json")
+        .setColor("GRAY");
+    for (let configKey in config) {
+        embed.addField(configKey,config[configKey]);
+    }
+    message.channel.send(embed);
+});
+
+addCommand("setraw", async (message, args) => {
+    config[args[0]]=args.shift().join(" ");
+    commands.writeConfig();
+    message.channel.send("The config has been updated.");
 });
 
 addCommand("setagemute", async (message, args) => {

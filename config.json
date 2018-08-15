@@ -1,15 +1,19 @@
 {
-    "token": "",
     "prefix": "/warden",
     "avatar": "https://i.imgur.com/a1eN6z4.png",
-    "age_mute": 35000,
+    "age_mute": 300,
     "age_ban": 30,
     "report_channel_id": "452530315630477333",
     "report_normal": true,
     "mute_role_id": "478360461817937921",
     "mute_role_enabled": true,
-    "reaction_timeout": 120000,
+    "simjoins_only": true,
     "message_join": "Hey there, it seems your account is a bit new! We're just looking things over.",
+    "message_join_enabled": true,
     "message_pardon": "Everything looks good, welcome to the community!",
-    "message_enabled": true
+    "message_pardon_enabled": true,
+    "message_pardon_refused": "Sorry, see ya buddy.",
+    "message_pardon_refused_enabled": true,
+    "message_join_ban": "Sorry, your account is too new.",
+    "message_join_ban_enabled": true
 }

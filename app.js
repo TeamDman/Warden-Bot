@@ -1,6 +1,7 @@
 'use strict';
 const config = require('./config');
 const discord = require('discord.js');
+const token = require('./token.json').token;
 const client = new discord.Client();
 let commands;
 
@@ -21,7 +22,9 @@ client.on('guildDelete', guild => {
 });
 
 client.on('guildMemberAdd', member => {
-    commands.onJoin(member);
+    if (!config.simjoins_only)
+        commands.onJoin(member);
 });
 
-client.login(config.token);
+console.log("App is starting");
+client.login(token);
