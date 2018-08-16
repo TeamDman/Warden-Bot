@@ -43,35 +43,29 @@ commands.getUser = (guild, identifier) => {
 commands.mute = async member => {
     console.log(`Attempting to mute ${member.user.username}.`);
     if (config.mute_role_enabled) {
-        let role = commands.getRole(config.mute_role_id);
-        if (role == null) {
-            console.log("Mute role missing. Reverting to permission overrides")
-        } else {
+        for (let id of config.mute_roles) {
+            let role = commands.getRole(id);
+            if (role === null)
+                continue;
             member.addRole(role).catch(e => console.error(e));
-            return;
         }
-    }
-    for (let channel of member.guild.channels.values())
-        channel.overwritePermissions(member, {SEND_MESSAGES: false}).catch(e => console.error(e));
+    } else
+        for (let channel of member.guild.channels.values())
+            channel.overwritePermissions(member, {SEND_MESSAGES: false}).catch(e => console.error(e));
 };
 
 commands.unmute = async member => {
     console.log(`Attempting to unmute ${member.user.username}.`);
     if (config.mute_role_enabled) {
-        let role = commands.getRole(config.mute_role_id);
-        if (role == null) {
-            console.log("Mute role missing. Reverting to permission overrides")
-        } else {
+        for (let id of config.mute_roles) {
+            let role = commands.getRole(id);
+            if (role === null)
+                continue;
             member.removeRole(role).catch(e => console.error(e));
-            return;
         }
-    }
-    for (let channel of member.guild.channels.values())
-        channel.permissionOverwrites.get(member.id).delete("pardoned").catch(e => console.error(e));
-    // await channel.replacePermissionOverwrites({
-    //     overwrites: [{id: member.id, denied: ['SEND_MESSAGES']}],
-    //     reason: "User mute pardoned"
-    // });
+    } else
+        for (let channel of member.guild.channels.values())
+            channel.permissionOverwrites.get(member.id).delete("pardoned").catch(e => console.error(e));
 };
 
 commands.report = async message => {
@@ -79,7 +73,7 @@ commands.report = async message => {
         commands.getChannel(config.report_channel_id).send(message);
     else
         console.log(`${message}\nMake sure to set a report channel id.`);
-}
+};
 
 commands.onMessage = async message => {
     if (message.author.bot)
@@ -98,7 +92,6 @@ commands.onMessage = async message => {
 };
 
 commands.onJoin = async member => {
-    // member = await member.guild.fetchMember(member.user);
     let ageMin = (new Date().getTime() - member.user.createdTimestamp) / (1000 * 60);
     console.log(`${member.user.username} has joined (${ageMin} minutes old).`);
     if (ageMin < config.age_ban) {
@@ -110,6 +103,7 @@ commands.onJoin = async member => {
             .setTitle("Infant Account Ban Notice")
             .setColor("RED")
             .addField("Name", `<@${member.user.id}>`)
+            .addField("Guild", member.guild.name)
             .addField("Creation Date", member.user.createdAt)
             .addField("Timestamp", member.user.createdTimestamp)
             .addField("Current Date", new Date())
@@ -127,6 +121,7 @@ commands.onJoin = async member => {
             .setColor("ORANGE")
             .setThumbnail(member.user.avatarURL)
             .addField("Name", `<@${member.user.id}>`)
+            .addField("Guild", member.guild.name)
             .addField("Creation Date", member.user.createdAt)
             .addField("Timestamp", member.user.createdTimestamp)
             .addField("Current Date", new Date())
@@ -165,7 +160,7 @@ commands.onJoin = async member => {
                 default:
                     return;
             }
-            await message.clearReactions();
+            message.clearReactions().catch(e => console.error(e));
         });
     } else if (config.report_normal)
         commands.report(new discord.RichEmbed().setDescription(`<@${member.id}> joined.`));
@@ -208,7 +203,7 @@ addCommand("inforaw", async (message, args) => {
         .setTitle("config.json")
         .setColor("GRAY");
     for (let configKey in config) {
-        embed.addField(configKey,config[configKey]);
+        embed.addField(configKey, config[configKey]);
     }
     message.channel.send(embed);
 });
@@ -233,14 +228,29 @@ addCommand("setageban", async (message, args) => {
     message.channel.send(new discord.RichEmbed().setTitle("Config Update").setColor("ORANGE").addField("Ban Age", `${config.age_ban} minutes`));
 });
 
-addCommand("setrole", async (message, args) => {
+addCommand("addrole", async (message, args) => {
     let role = commands.getRole(args.join(" "));
     if (role !== null) {
-        config.mute_role_id = role.id;
+        config.mute_roles.push(role.id);
         commands.writeConfig();
         message.channel.send(new discord.RichEmbed().setTitle("Config Update").setColor("ORANGE").addField("Role", `<@&${role.id}>`));
     } else
         message.channel.send("No matching roles found.");
+});
+
+addCommand("removerole", async (message, args) => {
+    let role = commands.getRole(args.shift());
+    if (role === null)
+        return message.channel.send("The given role could not be found.");
+    for (let i in config.mute_roles) {
+        if (config.mute_roles[i] == role.id) {
+            config.mute_roles.splice(i, 1);
+            commands.writeConfig();
+            message.channel.send("Removed the role from the list.");
+            return;
+        }
+    }
+    message.channel.send("The list did not contain that role.");
 });
 
 addCommand("setroleenabled", async (message, args) => {
