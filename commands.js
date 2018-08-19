@@ -75,9 +75,64 @@ commands.report = async message => {
         console.log(`${message}\nMake sure to set a report channel id.`);
 };
 
+commands.onDirectMessage = async message => {
+    let category = commands.getChannel(config.bot_dm_category_id);
+    if (category === null)
+        return console.error("Please set the category ID to support bot DM interaction");
+    let channel;
+    if (!config.bot_dm_channel_ids[message.author.id] || (channel = commands.getChannel(config.bot_dm_channel_ids[message.author.id])) === null) {
+        config.bot_dm_channel_ids[message.author.id] = (channel = await category.guild.createChannel(message.author.username + " Bot DM", "text", [{
+            id: category.guild.id,
+            deny: ['READ_MESSAGES', 'SEND_MESSAGES']
+        }], "User messaged bot")).id;
+        channel.setParent(category);
+        channel.setTopic(`Use \`${config.prefix} close\` to close | Message authors kept anonymous`);
+        await channel.send(new discord.RichEmbed()
+            .setTitle("Direct Message Surrogate")
+            .setColor("PURPLE")
+            .addField("User", `${message.author}`)
+            .addField("User ID", message.author.id));
+        commands.writeConfig();
+        commands.notifyResponders(new discord.RichEmbed()
+            .setColor("ORANGE")
+            .setTitle("Bot DM Received")
+            .addField("User", `${message.author}`)
+            .addField("Message", message.content)
+        );
+    }
+    channel.send(`<${message.author}> ${message.content}`);
+    console.log(message.author.username);
+};
+
+commands.notifyResponders = async message => {
+    for (let responder of config.bot_dm_responder_ids) {
+        let user = await client.fetchUser(responder).catch(e => console.error(e));
+        if (user === null)
+            continue;
+        let dm = await user.createDM();
+        dm.send(message);
+    }
+};
+
+commands.onDirectMessageReply = async (message, user) => {
+    if (user == null)
+        return message.channel.send("Error fetching user");
+    if (message.content === config.prefix + " close"){
+        return message.channel.delete();
+    }
+    (await user.createDM()).send(message.content);
+};
+
 commands.onMessage = async message => {
     if (message.author.bot)
         return;
+    if (message.channel instanceof discord.DMChannel)
+        return commands.onDirectMessage(message);
+    if (Object.values(config.bot_dm_channel_ids).includes(message.channel.id)) {
+        let id = Object.entries(config.bot_dm_channel_ids).find(entry => entry[1] == message.channel.id);
+        let user = await client.fetchUser(id[0]).catch(e => console.error(e));
+        return commands.onDirectMessageReply(message, user);
+    }
     if (message.content.indexOf(config.prefix) !== 0)
         return;
     if (!message.member.hasPermission("MANAGE_ROLES")
@@ -267,6 +322,43 @@ addCommand("setchannel", async (message, args) => {
         message.channel.send(new discord.RichEmbed().setTitle("Config Update").setColor("ORANGE").addField("Channel", `<#${channel.id}>`));
     } else
         message.channel.send("No matching channel found.");
+});
+
+addCommand("setdmcategory", async (message, args) => {
+    let channel = commands.getChannel(args.join(" "));
+    if (channel === null)
+        return message.channel.send("Could not find the category specified.")
+    if (!(channel instanceof discord.CategoryChannel))
+        return message.channel.send("The given channel is not a category channel.")
+    config.bot_dm_category_id = channel.id;
+    commands.writeConfig();
+    message.channel.send(new discord.RichEmbed().setTitle("Config Update").setColor("ORANGE").addField("Bot DM Category", `<#${config.bot_dm_category_id}>`));
+});
+
+addCommand("addresponder", async (message, args) => {
+    let user = commands.getUser(message.guild, args.join(" "));
+    if (user === null)
+        return message.channel.send("Unable to find the specified user");
+    if (config.bot_dm_responder_ids.includes(user.id))
+        return message.channel.send("That user is already on the notify list");
+    config.bot_dm_responder_ids.push(user.id);
+    commands.writeConfig();
+    message.channel.send(new discord.RichEmbed().setTitle("Config Update").setColor("GREEN").addField("Bot DM Responder", `${user}`));
+});
+
+addCommand("removeresponder", async (message, args) => {
+    let user = commands.getUser(message.guild, args.join(" "));
+    if (user === null)
+        return message.channel.send("Unable to find the specified user");
+    for (let i in config.bot_dm_responder_ids) {
+        if (config.bot_dm_responder_ids[i] === user.id) {
+            config.bot_dm_responder_ids.splice(i, 1);
+            commands.writeConfig();
+            message.channel.send(new discord.RichEmbed().setTitle("Config Update").setColor("GREEN").addField("Bot DM Responder Removed", `${user}`));
+            return;
+        }
+    }
+    message.channel.send("That user is not currently a responder.")
 });
 
 addCommand("setreportnormal", async (message, args) => {

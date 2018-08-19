@@ -1,4 +1,11 @@
 # Warden Bot
+Handles new users as they join the server.
+If they are under a certain threshold, they are muted.
+If they are under another threshold, they are banned instead.
+Moderators are notified when each action occurrs.
+
+Adds support to responding to direct messages to the bots.
+
 
 ## Setup
 
@@ -70,6 +77,16 @@ Directly calls the mute method on the given user.
 
 #### /warden unmute @user
 Directly calls the unmute method on the given user.
+
+#### /warden setdmcategory id
+Sets the category id for where bot DMs are to be posted
+
+#### /warden addresponder @user
+Adds a user to the list of users to be DM'd when the bot is DM'd
+
+#### /warden removeresponder @user
+The reverse of the above.
+
 
 ### Notes
 If the mute type is changed between the muting and unmuting of a user, then the user may not be properly unmuted.
