@@ -85,8 +85,8 @@ commands.onDirectMessage = async message => {
             id: category.guild.id,
             deny: ['READ_MESSAGES', 'SEND_MESSAGES']
         }], "User messaged bot")).id;
-        channel.setParent(category);
-        channel.setTopic(`Use \`${config.prefix} close\` to close | Message authors kept anonymous`);
+        channel.setParent(category).catch(e => console.error(e));
+        channel.setTopic(`Use \`${config.prefix} close\` to close | Message authors kept anonymous`).catch(e => console.error(e));
         await channel.send(new discord.RichEmbed()
             .setTitle("Direct Message Surrogate")
             .setColor("PURPLE")
@@ -100,8 +100,7 @@ commands.onDirectMessage = async message => {
             .addField("Message", message.content)
         );
     }
-    channel.send(`<${message.author}> ${message.content}`);
-    console.log(message.author.username);
+    channel.send(`<${message.author}> ${message.content}`).catch(e => console.error(e));
 };
 
 commands.notifyResponders = async message => {
