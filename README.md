@@ -78,7 +78,7 @@ Directly calls the mute method on the given user.
 #### /warden unmute @user
 Directly calls the unmute method on the given user.
 
-#### /warden setdmcategory id
+#### /warden setcategory id
 Sets the category id for where bot DMs are to be posted
 
 #### /warden addresponder @user
