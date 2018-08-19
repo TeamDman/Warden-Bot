@@ -324,7 +324,7 @@ addCommand("setchannel", async (message, args) => {
         message.channel.send("No matching channel found.");
 });
 
-addCommand("setdmcategory", async (message, args) => {
+addCommand("setcategory", async (message, args) => {
     let channel = commands.getChannel(args.join(" "));
     if (channel === null)
         return message.channel.send("Could not find the category specified.")
